@@ -1,0 +1,89 @@
+QUESTION 1
+
+
+```{r}
+library(tidyverse)
+movie_data <- read_csv("movies.csv")
+View(movie_data)
+```
+How can I clean, better understand and investigate this dataset.
+Languages column - full names for language.
+Tagline "NA" -> "No tagline"
+Revenue values 0 changed to NA
+Understand popularity vs rating vs revenue
+For which movies is original_title != title
+Character length of overview vs character length of title
+The data seems quite clunky?
+
+Question 2.
+
+A lot of interesting stuff in there! But for now, we are only interested in the movies’ titles, their runtime as well as their budget. Select the three columns that contain this information and save them into a new variable called movies_selected. Hint: you will have to make a choice between original_title and title.
+
+```{r}
+movies_selected <- movie_data %>% 
+  select(title, runtime, budget)
+movies_selected
+```
+
+Question 3.
+
+Ok, now take your subsetted data movies_selected, and count the number of missing values in each column.
+
+```{r}
+movies_selected %>% 
+  summarise(across(title:budget, function(x) sum(is.na(x))))
+
+  
+  
+```
+
+Question 4.
+
+There’s not too many NAs, but there are actually quite a few movies with a runtime of 0 in this dataset. Since it’s impossible for a movie to have a runtime of 0, use the function na_if to convert runtimes of length 0 into NAs. Save this into a new variable called movies_runtime. Then count how many missing values there are now in the column runtime.
+```{r}
+movies_runtime <- movies_selected %>% 
+  mutate(runtime = na_if(runtime, 0))
+sum(is.na(movies_runtime$runtime))
+  
+    
+
+
+
+```
+Question 5.
+
+Impute the missing values in runtime with the median runtime using coalesce and save this into a new variable called movies_imputed. There should now be no missing values in the column runtime - check this to make sure.
+comms_data_imputed_median <- comms_data %>%
+    mutate(monthly_charges = coalesce(monthly_charges, median(monthly_charges, na.rm = TRUE)))
+
+comms_data_imputed_median
+```{r}
+movies_imputed <- movies_runtime %>% 
+  mutate(runtime = coalesce(runtime, median(runtime, na.rm = TRUE)))
+sum(is.na(movies_imputed$runtime))
+
+```
+Question 6.
+
+Finally, use the slice_min and slice_max functions on movies_imputed to get the movies with the 10 shortest and 10 longest runtimes.
+
+```{r}
+movies_imputed %>% 
+slice_min(runtime, n = 10)
+movies_imputed %>% 
+slice_max(runtime, n = 10)
+
+
+```
+Question 7.
+
+Using the if_else function, impute anything with a budget below $100 with the median budget. Overwrite your movies_imputed so it contains the new budget values.
+
+```{r}
+movies_imputed <- movies_imputed %>% 
+  mutate(budget = if_else(budget < 100, median(budget), budget))
+movies_imputed
+```
+
+
+
