@@ -43,7 +43,9 @@ There’s not too many NAs, but there are actually quite a few movies with a run
 ```{r}
 movies_runtime <- movies_selected %>% 
   mutate(runtime = na_if(runtime, 0))
-sum(is.na(movies_runtime$runtime))
+movies_runtime %>% 
+  summarise(count = sum(is.na(runtime)))
+#summarise(count = sum(is.na(movies_runtime$runtime)))
   
     
 
