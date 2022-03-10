@@ -45,10 +45,8 @@ movies_runtime <- movies_selected %>%
   mutate(runtime = na_if(runtime, 0))
 movies_runtime %>% 
   summarise(count = sum(is.na(runtime)))
-#summarise(count = sum(is.na(movies_runtime$runtime)))
-  
-    
-
+#summarise(count = sum(is.na(movies_runtime$runtime))) 
+#dont need this line^^ much less succinct.
 
 
 ```
@@ -62,7 +60,13 @@ comms_data_imputed_median
 ```{r}
 movies_imputed <- movies_runtime %>% 
   mutate(runtime = coalesce(runtime, median(runtime, na.rm = TRUE)))
+#wrong v right ^
 sum(is.na(movies_imputed$runtime))
+
+
+#Aswer for second part below. 
+#movies_imputed %>% 
+ # summarise(count = sum(is.na(runtime)))
 
 ```
 Question 6.
@@ -83,9 +87,45 @@ Using the if_else function, impute anything with a budget below $100 with the me
 
 ```{r}
 movies_imputed <- movies_imputed %>% 
-  mutate(budget = if_else(budget < 100, median(budget), budget))
+  mutate(budget = if_else(budget < 100,
+                          median(budget), 
+                          budget))
 movies_imputed
 ```
 
+2 Extension
 
+
+Question 1.
+
+Using case_when, create a new column called budget_type and label budgets as follows:
+
+Budgets below 12 million as ‘Small budget’
+Budgets between 12 and 40 million as ‘Medium budget’
+Budgets 40 millions and above as ‘Big budget’
+Save this into a new variable called movie_budgets.
+
+```{r}
+movie_budgets <- movies_imputed %>% 
+  mutate(
+    budget_type = case_when(
+      budget < 12000000 ~ "Small Budget",
+      # THIS DOESNT WORK - remember there's a logical order. 
+      #12000000 < budget < 40000000 ~ "Medium Budget",
+      budget < 40000000 ~ "Medium Budget",
+      budget >= 40000000 ~ "Big Budget" #you can write TRUE here. this is the final logical test, and the leftover values should all pass this.
+      
+    
+  ))
+movie_budgets
+```
+Take the original dataset with all the variables. Using across and where, summarise the number of missing values, first across all columns of type character, and then across all columns of type numeric.
+
+```{r}
+movie_data %>% 
+  summarise(across(where(is.numeric), .fns = ~sum(is.na(.x))))
+movie_data %>% 
+  summarise(across(where(is.character), .fns = ~sum(is.na(.x))))
+
+```
 
