@@ -1,0 +1,237 @@
+Loading in library and data.
+```{r}
+library(tidyverse)
+read_csv("data/books.csv")
+```
+
+```{r}
+books_data <- read_csv("data/books.csv")
+glimpse(books_data)
+head(books_data, 10)
+summarise(books_data)
+view(books_data)
+```
+Just a note - I've tried for a while to extract the publisher number from the isbn13 column, but can't find a way to do it with tidyverse. Any advice?
+
+checking for NA values
+
+```{r}
+books_data %>% 
+  select(everything()) %>%  
+  summarise_all(funs(sum(is.na(.))))
+```
+there aren't any NA's but there are a load of zeros.
+
+Initial thoughts -
+----------------------
+Reasons you read a book :
+    Because you've heard good things.
+    To learn a language.
+    To pass the time.
+    
+What matters about book ratings :
+    Rating accuracy - how many ratings? What's the sample for the average. 
+    Which publisher has the highest average ratings?
+    When was the book published? - this one how would I extract the year from the publication_date column?
+    Number of text-reviews compared to ratings. If the ration is higher does this mean the book is worth writing about?
+    
+    
+```{r}
+books_refined <- books_data %>% 
+  select(
+    title,
+    average_rating,
+    ratings_count,
+    text_reviews_count
+  )
+books_refined %>% 
+  arrange(desc(average_rating))
+```
+Just from this, we can see that many of the books with the highest rating do not have many ratings at all. How can we trust this rating value? Can an index be created which relies on both the number of ratings and the rating itself.
+
+It can't be right that some books have a rating with a rating count of 0, so we need them to be imputed with the mean.
+
+```{r}
+books_refined <- books_refined %>% 
+  mutate(
+    ratings_count = case_when(
+      ratings_count == 0 ~ mean(ratings_count, na.rm = TRUE),
+      TRUE ~ ratings_count
+    )
+  )
+   
+books_refined %>% 
+  slice_min(ratings_count)
+  
+```
+
+
+```{r}
+#normalise ratings count data 
+max_ratings <- books_refined %>% 
+  slice_max(ratings_count) %>% 
+  pull(ratings_count)
+
+books_refined %>% 
+  mutate(normalised_ratings_count = ratings_count / max_ratings,
+                        #create new index on a scale 0:1
+                        ratings_index = ((normalised_ratings_count/2) + (average_rating/10)), 
+                        .after = ratings_count
+                        ) %>% 
+  arrange(desc(ratings_count))
+
+```
+By taking equal parts from the normalised value of the ratings and the normalised value of the ratings count (assuming both are equally important right?) we can estimate that Twilight #1, The Hobbit or There and Back Again, and The Catcher in the Rye are the most highly enjoyed reads in the dataset. We could look at this and normalise/combine the data differently, and would probably get a different outcome, but I don't know how yet.
+
+Of these books, what's the ratio of readers choosing to simply rate out of 5against those compelled to write a review?
+
+```{r}
+books_refined <- books_refined %>% 
+  mutate(ratings_to_text_rev_ratio = ratings_count / text_reviews_count, .after = ratings_count)
+
+#which of the books does the highest proportion of reviewers chose to leave feedback as text?
+
+books_refined %>% 
+  slice_min(ratings_to_text_rev_ratio, n = 10)
+
+```
+Next, I'd like to understand the relationship between text_reviews_count and num_pages. I think that it makes sense that if a book has more pages, its readers will be more inclined to write a review, just because that number of pages requires a larger investment in the book, reading culture, and has more of an opportunity to have an impact.
+
+```{r}
+text_review_data <- books_data %>% 
+  select(title, text_reviews_count, num_pages) %>% 
+  arrange(desc(text_reviews_count))
+text_review_data
+```
+
+Having read this data, I realise that the number of text based reviews relies primarily on the popularity of the books, so without data on the number of books sold, it's very hard to determine if my hypothesis is true. I don't know if using the number of ratings submitted as an indicator of popularity is a good way of moving past this problem, but for the sake of the exercise it's worth doing.
+
+```{r}
+new_text_review_data <- books_data %>% 
+  select(title, text_reviews_count, num_pages, ratings_count)
+
+
+new_text_review_data <- new_text_review_data %>% 
+  mutate(
+    text_reviews_count = case_when(
+      text_reviews_count == 0 ~ mean(text_reviews_count, na.rm = TRUE),
+      TRUE ~ text_reviews_count
+    ),
+    ratings_count = case_when(
+      ratings_count == 0 ~ mean(ratings_count, na.rm = TRUE),
+      TRUE ~ ratings_count
+    )
+  )
+
+#divide text_reviews_count by the ratings_count to take away the factor of popularity in a round-about way.
+
+new_text_review_data <- new_text_review_data %>% 
+  mutate(
+    modified_text_reviews_count = text_reviews_count/ratings_count,
+    .after = text_reviews_count
+  ) %>% 
+  arrange(desc(modified_text_reviews_count))
+new_text_review_data
+
+#try a bit of ggplot here just to see if it correlates
+
+
+library(ggplot2)
+
+ggplot(new_text_review_data, aes(x = num_pages, y = modified_text_reviews_count)) + geom_point(size = 0.1) 
+
+```
+All this plot really shows us is that books above 1000 pages rarely get reviewed. I'm not confident in the way I used or produced the modified values so I wouldn't rely on these results. 
+
+
+If an author releases a number of books, they tend to have a bit of a following, higher marketing budget, and so receive more reviews I think. I will test the data to see if this shows by comparing the number of books released by an author to their average rating or number of ratings.
+
+```{r}
+following_data <- books_data %>% 
+  select(authors, average_rating, ratings_count) %>% 
+  group_by(authors) %>% 
+  summarise(author_rating = mean(average_rating),
+            book_count = length(authors)
+    )
+#have a quick look at the data
+ggplot(following_data, aes(x = book_count , y = author_rating)) + geom_point(size = 0.1) 
+
+following_data
+
+
+```
+```{r}
+books_refined %>%
+  summarise(mean(average_rating))
+```
+For a second time, this data didn't really do what I expected it to. Because I took the average author rating, it seems that the more books an author has, the closer their ratings tend to become to the average author rating of 3.9. So, I'm not really sure how to answer the question I had right yet. It might be worth instead taking the average of an author's three latest books, and then looking at that with respect to the number of books counted
+
+
+```{r}
+following_data_2 <- books_data %>% 
+  select(authors, average_rating, ratings_count) #<--- here I get a message saying "Selecting by ratings_count". Why?
+  
+#find out new author ratings
+
+top_three_author_rating <- following_data_2 %>% 
+group_by(authors) %>% 
+  top_n(3) %>%
+  summarise(top_three_author_rating = mean(average_rating))
+            
+#store book counts
+
+author_book_count <- following_data %>% 
+  select(book_count)
+
+#merging datasets so I can look at it together - is there a better way to do this?
+
+book_count_vs_top_three_rating <- bind_cols(author_book_count, top_three_author_rating)
+
+#have a quick look at the data
+ggplot(book_count_vs_top_three_rating, aes(x = book_count , y = top_three_author_rating)) + geom_point(size = 0.1) 
+
+
+
+
+
+```
+```{r}
+book_count_vs_top_three_rating %>% 
+summarise(mean(top_three_author_rating))
+```
+The graph doesn't look much different and I realised that this isn't what I intended to do.
+I wanted to pick the most recent 3, but I forgot to sort by date, so really this is just a smaller sample of each author's average rating. It would be cool to learn how to extract the year of the date from the column in the original dataset. I've seen some things on this online by using the / as a separator, but there's this thing called patterns, and it's not the remit of this weekend's homework and looks really confusing :)
+
+
+A lot of these publishers will be academic, others will be for fictional stories. Academic books tend to be quite hefty.. are they heftier than fiction? idk. It would be nice to know the average page count of each publisher's work, and to see who produces the longest and shortest books.
+
+```{r}
+book_lengths <- books_data %>% 
+  select(title, authors, num_pages, publisher)
+
+#check for zeros
+
+book_lengths %>% 
+  summarise(sum(num_pages == 0))
+
+#these are likely audiobooks, so just better to be ignored, along with those up to length 4
+
+book_lengths <- book_lengths %>% 
+  filter(num_pages > 4)
+  
+#answer initial q
+
+x <-book_lengths %>% 
+  group_by(publisher) %>% 
+  summarise(average_length = mean(num_pages))
+x %>% 
+slice_min(average_length, n = 10)
+x %>% 
+slice_max(average_length, n = 10)
+
+  
+```
+
+
+
+
