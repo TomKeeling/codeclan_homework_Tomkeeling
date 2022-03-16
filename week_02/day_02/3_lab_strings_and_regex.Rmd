@@ -80,8 +80,10 @@ Stocks of Victory Gin have run out and the people of Oceania will have to drink 
 
 ```{r}
 whole_text %>% 
-  str_replace_all("gin", "vodka") %>% 
-  str_replace_all("Gin", "Vodka")
+  str_replace_all(" gin", " vodka") %>% 
+  str_replace_all(" Gin", " Vodka")
+
+#this is'nt robust- need to explore pattern after just to check!
 ```
 
 
@@ -106,7 +108,10 @@ whole_text %>%
   str_replace_all("Mini", "Dep") %>%
   str_replace_all("mini", "dep")
   
-  #not that keen ngl
+  #not that keen ngl - could've been a little more creative. plurals for example, can be done as Department -> Ministrie or Ministrie -> Department. Whole thing can shrink a little xo
+
+whole_text %>% 
+  str_extract_all("Department|Ministry|Ministrie|Mini")
 ```
 
 
