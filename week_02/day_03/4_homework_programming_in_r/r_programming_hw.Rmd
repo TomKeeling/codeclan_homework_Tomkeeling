@@ -1,0 +1,190 @@
+
+ 
+**Question 1.** \
+Find the weather forecast for the next three days online. Create a list of lists in which each inner list should be labelled with the name of the day of the week. Each inner list should contain named elements telling you the temperature, chance of rain and wind speed.
+
+
+```{r}
+weather <- list(
+  "Thursday" = list(temp = 2 , rain_chance = 3, wind_speed = 4),
+  "Friday" =  list(temp = 5, rain_chance = 6, wind_speed = 7),
+  "Saturday" =  list(temp = 8, rain_chance = 9, wind_speed = 10)
+  )
+weather
+```
+
+
+**Question 2.** \
+Using the list you've just made find:
+
+  i. The chance of rain tomorrow
+  ii. The wind speed on the day after tomorrow
+  iii. The temperature tomorrow.
+
+```{r}
+#the chance of rain tomorrow
+weather[[1]][[2]]
+#the wind speed day after tomorrow
+weather$Friday$wind_speed
+#temperature tomorrow
+weather[[1]][[1]]
+```
+
+
+
+**Question 3.** \
+Find a 14 day forecast online and create a matrix of the forecasts for temperature, where each week is one row and columns correspond to days.
+
+You will want to give a name to the matrix you create.
+
+```{r}
+forecast_14_days <- c(11, 13, 15, 12, 11, 13, 13, 12, 12, 12, 12, 12, 12, 12)
+forecast_matrix <- matrix(forecast_14_days, ncol = 7, nrow = 2, byrow = TRUE)
+forecast_matrix
+```
+
+
+**Question 4.** \
+From the matrix you just made select:
+
+  i. The third day of the second week
+  ii. The whole second week
+  iii. The first, third and fifth days in both weeks.
+
+
+```{r}
+forecast_matrix[2, 3]
+forecast_matrix[2, ]
+forecast_matrix[ ,c(1, 3, 5)]
+
+                
+```
+
+
+**Question 5.** \
+Write a function that pre-appends "The answer is: " to any character input, while for numeric input, it either just returns the number for numbers less than 10, or divides the number by 10 for numbers greater than 10. For anything else return "Invalid input".
+
+```{r}
+answer_function <- function (i) {
+  if(is.character(i) == TRUE) {
+    return(
+      paste("The answer is: ", i)
+    )
+  }
+  if(is.numeric(i) == TRUE){
+    if(i <= 10){
+    return(i)
+  }
+    if(i > 10){
+    return(i/10)
+    }
+  }
+   else { 
+    return("Invalid input")
+    }
+
+} 
+
+
+```
+
+
+```{r}
+
+answer_function(90)
+answer_function(2)
+answer_function(as.logical(TRUE))
+answer_function("hello")
+
+```
+
+
+**Question 6.** \
+Write a function which checks if two vectors have the same elements. 
+
+* If they have the same elements in the same order, return "Exactly the same"
+* If they have the same elements but in a different order, return "The same"
+* If they don't have the same elements, return "Different".
+
+```{r}
+same_elements <- function(v1, v2){
+  if(setequal(v1, v2) == TRUE) {
+    return("Exactly the same")
+  }
+  v1_sorted <- sort(v1)
+  v2_sorted <- sort(v2)
+  if(setequal(v1_sorted, v2_sorted) == TRUE){
+    return("The same")
+  } else {
+    return("different")
+  }
+  }
+```
+
+
+<details>
+<summary>**Hints**</summary>
+* You can check if two vectors have the same elements but in a different order by using `sort` to sort each vector first and then checking if they are equal.
+* Have a look at the `all()` function
+</details>
+</blockquote>
+
+
+# Extension
+
+
+
+**Question 7.** \
+Write code that prints a multiplication table for numbers up to 12. i.e. there will be 12 rows and 12 columns, and each element should be the row number multiplied by the column number.
+
+
+```{r}
+times_table_12 <- matrix(data = NA, ncol = 12, nrow = 12)
+row_length <- 12
+col_length <- 12
+for (row_index in 1:row_length) { 
+  for (col_index in 1:col_length) { 
+    times_table_12[row_index, col_index] <- row_index * col_index #index the cell value, and replace it with a new value
+  }
+}
+times_table_12
+```
+
+
+*From: https://adriann.github.io/programming_problems.html*
+
+
+
+**Question 8.** \
+Write a function that takes a vector, and creates a text art histogram, like the one below.
+
+You may want to use the function `cat()`. This is similar to `print()`, but prints directly, without vector markers. You can also include newlines `"\n"` when using `cat()`.
+
+```
+1 | ***
+2 | *
+3 | *******
+4 | ****
+5 | **
+```
+```{r}
+testvector <- c(1:4,1)
+
+hist_art <- function(vector){
+  vector_sorted <- sort(vector)
+  vec_table <- table(vector_sorted)
+  times = vec_table[2, col_index)]
+  
+    for(col_index in ncol(vec_table)) {
+      cat(col_index, " | ", rep("*", times = vec_table[2, col_index]))
+    }
+      
+    
+      
+    
+    
+  }
+
+hist_art(testvector)
+```
+
