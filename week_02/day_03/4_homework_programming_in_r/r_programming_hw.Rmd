@@ -181,7 +181,7 @@ hist_art <- function(vector){
       
     
       
-    
+    # ok so this was just not the one :))) lol looked at the solution and honestly wtf was i doing hahahahha.
     
   }
 
