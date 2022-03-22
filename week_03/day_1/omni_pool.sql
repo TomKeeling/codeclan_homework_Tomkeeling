@@ -16,16 +16,23 @@ WHERE department = 'Legal';
  * Question 4.
 Count the number of employees based in either Portugal or Spain.*/
 SELECT 
-count(*)
+count(id)
 FROM employees 
 WHERE country = 'Portugal' OR country = 'Spain'; --35
+
+/*
+ * SELECT 
+  COUNT(id) AS num_employees_Portugal_Spain
+FROM employees
+WHERE country IN ('Portugal', 'Spain') also works
+ */
 
 /*
  * Question 5.
 Count the number of pay_details records lacking a local_account_no. 
  */
 SELECT
-count(*)
+count(*) AS number_of_details_no_local_acct
 FROM pay_details  
 WHERE local_account_no ISNULL; --25
 
@@ -56,7 +63,8 @@ ORDER BY last_name NULLS LAST;
 
 SELECT first_name, last_name, country
 FROM employees 
-ORDER BY country, last_name NULLS LAST;
+ORDER BY country ASC NULLS LAST,
+last_name  ASC NULLS LAST;
 
 
 
@@ -94,7 +102,7 @@ Find all the details of any employees with a ‘yahoo’ email address?
 
 SELECT *
 FROM employees 
-WHERE email LIKE '%yahoo%'
+WHERE email LIKE '%yahoo%' -- try USING ILIKE INSTEAD 
 
 /*
 Question 13. Count the number of pension enrolled employees not based in either
@@ -115,6 +123,13 @@ FROM employees
 WHERE fte_hours = '1.0'
 ORDER BY salary DESC NULLS LAST
 LIMIT 1; -- 99,634
+
+--or 
+
+SELECT 
+max(salary) AS eng_max_sal
+FROM employees 
+WHERE department = 'Engineering' AND fte_hours = 1
 
 /*
  * Question 15.
@@ -149,10 +164,19 @@ WHERE first_name NOTNULL AND last_name NOTNULL AND department NOTNULL;
 */
 SELECT 
 concat(first_name, ' ', last_name , ' - ', department, 
-'(joined ', DATE(SUBSTRING(start_date FROM 1 FOR 4)) )
+'(joined ', EXTRACT(YEAR FROM start_date), ')' )
 AS badge_label 
 FROM employees 
 WHERE first_name NOTNULL AND last_name NOTNULL AND department NOTNULL;
+
+SELECT 
+concat(first_name, ' ', last_name , ' - ', department, 
+'(joined ', EXTRACT(YEAR FROM start_date), ')' )
+AS badge_label 
+FROM employees 
+WHERE first_name NOTNULL AND last_name NOTNULL AND department NOTNULL;
+
+
 
 
 
