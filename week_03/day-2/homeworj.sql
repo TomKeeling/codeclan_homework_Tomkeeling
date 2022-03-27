@@ -51,15 +51,28 @@ ON e.id = p.id
 
 --(b). Amend your query above to also return the name of the team that each employee belongs to. 
 SELECT 
-team,
+name,
 first_name ,
 last_name,
 local_account_no,
 local_sort_code 
-FROM (employees AS e
+FROM employees AS e
 INNER JOIN pay_details AS p 
-ON e.id = p.id)
-team
+ON e.id = p.id
+LEFT JOIN teams AS t 
+ON e.team_id = t.id
 
+/*
+ * where to use having and where to use where.
+ * 
+ */
+
+SELECT 
+    country,
+    avg(salary) AS avg_salary,
+    min(salary) AS min_salary
+FROM employees
+GROUP BY country 
+HAVING avg(salary) <30000 AND min(salary) > 1000
 
 
