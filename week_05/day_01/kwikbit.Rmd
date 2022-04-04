@@ -1,0 +1,90 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(CodeClanData)
+```
+
+# Question 1
+Take the data in the dataset qb_revenue_breakdown and make a stacked bar chart showing the sources of revenue across the two years in the dataset. 
+```{r}
+qb_revenue_breakdown %>% 
+  ggplot() +
+  aes(x = Year, y = Revenue, fill = Product) +
+  geom_bar(stat = "identity")
+```
+
+
+# Questino 2.
+Make a line chart showing monthly sales of the “flagship product” - the ‘KwikBit Unit 1’ - over the last year. This data is inside qb_monthly_sales, but you will need to use filter() or subset() (base R). 
+```{r}
+library(scales)
+qb_monthly_sales %>% 
+  filter(Cashflow == "Kwikbit Unit 1 Sales") %>% 
+  ggplot() +
+  aes(x = Date, y = Amount) +
+  geom_line() +
+  scale_x_date(labels = date_format("%b -%Y"))
+```
+# Question 3.
+Make a line chart showing monthly revenue and costs over the last year. This data is also in qb_monthly_sales.
+
+```{r}
+qb_monthly_sales %>% 
+  filter(Cashflow %in% c("Total Revenue", "Cost")) %>% 
+  ggplot() +
+  geom_line(aes(x = Date, y = Amount, colour = Cashflow )) 
+
+```
+
+
+# Question 4.
+
+Show annual sales of personal fitness trackers over the last 5 years broken down by company as a ribbon plot (use geom_area). This data is in qb_competitors. 
+
+
+
+```{r}
+qb_competitors %>% 
+  ggplot()+
+  geom_area(aes(Year, Revenue, fill = Company))
+
+```
+# Question 5
+
+Now show the sales from the four competitors as a line graph. Include an extra layer that shows the data points used to make the lines. 
+```{r}
+qb_competitors %>% 
+  ggplot() +
+  aes(Year, Revenue, colour = Company) +
+  geom_line() +
+  geom_point()
+  
+```
+
+# Question 6
+
+Now the company wants to compare the number of steps that their device counts vs. their competitors. Make a line graph of the number of steps throughout time, and use faceting to compare between companies and people. The data for this is in qb_device_data. 
+
+```{r}
+qb_device_data %>% 
+  mutate(
+    time = hours + (mins/60)
+  ) %>% 
+  ggplot() +
+  aes(time, counts, colour = device) +
+  geom_line() +
+  facet_grid(device~id)
+```
+
+
+
+
+
+
+
+
+
