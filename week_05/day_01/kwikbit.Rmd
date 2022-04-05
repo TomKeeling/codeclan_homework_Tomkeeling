@@ -14,7 +14,9 @@ Take the data in the dataset qb_revenue_breakdown and make a stacked bar chart s
 qb_revenue_breakdown %>% 
   ggplot() +
   aes(x = Year, y = Revenue, fill = Product) +
-  geom_bar(stat = "identity")
+  geom_col() +
+  theme_void() +
+  theme(panel.grid.major = element_line(colour = "black"))
 ```
 
 
@@ -77,9 +79,24 @@ qb_device_data %>%
   ggplot() +
   aes(time, counts, colour = device) +
   geom_line() +
-  facet_grid(device~id)
+  facet_grid(id~device) +
+  labs(title = "QB Competitors - Steps Over Time",
+       y = "Steps",
+       x = "Decimal Time"
+      )
 ```
 
+```{r}
+monthly_sales <- read_csv("data/monthly_sales.csv")
+
+monthly_sales <- monthly_sales %>%
+  mutate(month = factor(month, levels = c("Jan", "Feb", "March", "April"))) 
+
+ggplot(monthly_sales) +
+  aes(x = branch, y = sales, fill = month) +
+  geom_col(position = "dodge") +
+  coord_flip()
+```
 
 
 

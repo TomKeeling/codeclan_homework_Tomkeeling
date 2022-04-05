@@ -1,0 +1,133 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Scales - 
+Scales give the details of the mapping from the data to the aesthetic qualities.
+
+```{r}
+pets <- CodeClanData::pets
+```
+
+```{r}
+ggplot(pets, mapping = aes(x = age, y = weight, colour = sex)) +
+  geom_point() +
+  scale_x_continuous(breaks = seq(2, 12, 3), labels = letters[1:4]) +
+  scale_y_continuous(breaks = c(5,7,9,11))
+  
+```
+
+
+```{r}
+ggplot(pets, mapping = aes(x = age, y = weight, colour = sex)) +
+  geom_point() +
+  scale_x_continuous(breaks = seq(2, 12, 2)) +
+  coord_cartesian((xlim = c(0,8)))
+                  
+  
+```
+
+
+
+```{r}
+ggplot(pets, mapping = aes(x = age, y = weight, colour = sex)) +
+  geom_point() +
+  scale_y_continuous(limits = c(0, 8)) 
+  
+```
+
+
+
+```{r}
+ggplot(pets) +
+  aes(x = animal, fill = sex) +
+  geom_bar() +
+  coord_flip()
+```
+
+
+
+to introduce labels you can simply use ylab() and xlab()
+to make labels more readable with thousands you can put 
+scale_y_continuous(labels = scales::percent/comma/blah/???) investigate the scales package and the help file.
+showcol(c()) <- to arrange a colourtheme.
+
+
+
+```{r}
+pets <- add_case(pets, name = 'CamFraz', sex = 'M', weight = 95, age = 24) 
+  
+ggplot(pets, mapping = aes(x = age, y = weight, colour = sex)) +
+  geom_point() +
+  scale_y_log10(name = "log(weight)") 
+
+
+
+
+```
+
+London 244
+leeds 110
+leatherhead
+glasgow 150
+edinburgh 140
+
+
+```{r}
+library(CodeClanData)
+ggplot(total_sales) +
+  aes(x = branch, y = sales) +
+  geom_col() +
+  coord_flip()
+
+
+ggplot(total_sales) +
+  aes(x = reorder(branch, -sales), y = sales) +
+  geom_col() +
+  coord_flip()
+```
+
+```{r}
+total_sales %>% 
+  mutate(label_text = ifelse(branch == "Leeds", "The Leeds branch has 715k sales", NA)) %>% 
+ggplot() +
+  aes(x = branch, y = sales, fill = (branch == "Leeds")) +
+  geom_col() +
+  scale_fill_manual(values = c('grey40', 'red'), guide = "none") +
+  geom_text(aes(label = label_text), colour = "red", size = 4, hjust = 0) +
+  coord_flip()
+```
+
+```{r}
+monthly_sales <- CodeClanData::monthly_sales %>%
+  mutate(month = factor(month, levels = c("Jan", "Feb", "March", "April"))) %>% 
+  group_by(branch, month) %>% 
+  mutate(label_colour = ifelse(sales == max(sales), "RED", NA))
+
+head(monthly_sales)
+
+ggplot(monthly_sales) +
+  aes(x = branch, y = sales, fill = month) +
+  geom_col(position = "dodge") +
+  coord_flip()
+```
+
+```{r}
+min_max <-max(abs(monthly_sales_april$difference_from_jan))
+  
+
+ggplot(monthly_sales_april) +
+  aes(
+    x = reorder(branch, difference_from_jan),
+    y = difference_from_jan,
+    fill = difference_from_jan > 0
+  ) +
+  geom_col() +
+  ylim(-min_max, min_max) +
+    labs(y = "Difference in sales", x = "Branch location", title = "Sales differences between January and April") + 
+  scale_fill_manual(values = c("tomato", "seagreen"), name = "", labels = c("decrease", "increase")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+

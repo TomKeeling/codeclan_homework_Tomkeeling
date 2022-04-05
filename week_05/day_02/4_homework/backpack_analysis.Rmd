@@ -1,0 +1,131 @@
+---
+title: "backpack_data"
+author: "TK"
+date: '2022-04-05'
+output: html_document
+---
+
+# BACKPACK DATA <3
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+library(tidyverse)
+backpack_data <- CodeClanData::backpack %>% 
+  mutate(
+    back_problems = as.logical(back_problems)
+  )
+```
+Question 1.
+
+Load in the libraries you need, and look at the backpack data. Take note of variable names and dimensions.
+For this data I'll be needing the tidyverse library. The data combines backpack weights, body weights occurance of back problems, the college major of each of the participants along with sex, status (undergrad or grad) and a number of ambiguous units. 
+
+Question 2.
+
+The backpack weights carried by the students are distributed like this 
+```{r}
+backpack_data %>% 
+  ggplot() +
+  geom_density(aes(x = backpack_weight))
+```
+There is a negative skew - students are most probable to have backpacks around 10lbs.
+
+
+Question 3.
+
+Are there differences in backpack weight between sex?
+```{r}
+means <- backpack_data %>% 
+  group_by(sex) %>% 
+  summarise(mean_weight = mean(backpack_weight, na.rm = TRUE))
+means
+
+backpack_data %>% 
+  ggplot() +
+  geom_density(aes(x = backpack_weight, colour = sex)) +
+  geom_vline(data = means, aes(xintercept = mean_weight, colour = sex),
+              linetype ="longdash", size = .8)
+```
+In terms of the distributions, both males and females tend to have similarly packed bags. On average, females bags are slightly lighter than males bags. Now I think about this, it would've been more useful to do a box and whisper plot.
+```{r}
+backpack_data %>% 
+  ggplot() +
+  aes(x = sex, y = backpack_weight, fill = sex) +
+  guides(fill = FALSE) +
+  geom_boxplot()
+```
+This shows more clearly now the spread of values for the weight of bags belonging to males and females. clearly the men have a larger spread and a higher average. Not sure what the dots mean.
+
+Question 4.
+
+What is the relationship between body weight and backpack weight?
+
+I would expect there not to be too much of a relationship, as normally a backpack is heavy because of a need to carry books, not because the person is a heavy person. That being said, a person might be more minimal about what they pack depending on their own strength.
+
+```{r}
+backpack_data %>% 
+  ggplot() +
+  aes(x = body_weight, y = backpack_weight) +
+  geom_point(aes(shape = sex)) +
+  geom_smooth(method=lm, se=FALSE, col='red', size=0.5, linetype = "longdash")
+```
+We can see that there is a slight trend with the data, but the gradient is pretty low, with someone double the weight of another person only taking on about 4lbs more.
+
+Question 5.
+
+Is this relationship different between men and women? Choose an appropriate plot and interpret your findings.
+I'm really not sure, but I will add two trend lines to see.
+
+```{r}
+backpack_data %>% 
+  ggplot() +
+  aes(x = body_weight, y = backpack_weight) +
+  geom_point(aes(shape = sex)) +
+  geom_smooth(aes(col = sex), method=lm, se=FALSE, size=0.5, linetype = "longdash")
+```
+We can see that heavier women are marginally more inclined to take heavier bags with them.
+
+Question 6.
+
+What proportion of students report back pain? PIE CHART??!!
+
+```{r}
+backpack_data %>% 
+  ggplot() + 
+  aes(x = '', fill = back_problems) +
+  geom_bar(position = "fill")
+  
+```
+Looks like only ~35% of people have back problems from the data set.
+```{r}
+backpack_data %>% 
+  ggplot() + 
+  aes(x = sex, fill = back_problems) +
+  geom_bar(position = "fill")
+  
+```
+for males, this proportion is much lower than it is for females.
+
+Question 8.
+
+Now you’ve investigated your data separately, create plots to describe the relationship between backpack weight, body weight, gender and reported backpain.
+
+Try both backpack_weight and body_weight as well as the ratio.
+
+Hint: faceting would be useful here.
+
+
+
+
+```{r}
+backpack_data %>% 
+  ggplot() +
+  aes(x = body_weight, y = backpack_weight) +
+  geom_point(aes(colour = sex, shape = back_problems)) +
+  geom_smooth(aes(col = sex, linetype = back_problems), method=lm, se=F, size=0.5) +
+  facet_grid(sex~back_problems, labeller = "label_both")
+```
+For females with and without back problems, the bag weight tends to increase with the bodyweight. This is also true for men without back problems, but the small amount of data available for men with back problems suggests that men with back problems tend to carry lighter bags as their bodyweight increases. The distribution for this final set of data is very narrow, so I don't believe very much in the accuracy of the smoothed line,
