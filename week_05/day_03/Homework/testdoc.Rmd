@@ -1,0 +1,53 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(here)
+library(tidyverse)
+
+```
+```{r}
+inflation <- CodeClanData::inflation4
+
+inflation %>% 
+      filter(Year == round(1999.22)) %>% 
+  view
+
+inflation %>% 
+  ggplot() +
+  aes(x = Year, y = value, colour = variable) +
+  geom_line() +
+  ylab("Inflation (%)") +
+  labs(colour = "Country")
+
+### find a way to put varied alpha and hover over values in here
+
+
+# relative change in currency value over time
+inflation %>% 
+  filter(Year == 2000) %>% 
+  ggplot() +
+  aes(x = variable, y = value, fill = variable) +
+  geom_col()
+
+ 
+```
+```{r}
+inflation %>% 
+  group_by(variable) %>% 
+  mutate(
+    new_vals = (value*0.01)+1) %>% 
+  mutate(
+    cum_prod = cumprod(new_vals)
+  ) %>% 
+  ggplot() +
+  aes(x = Year, y = cum_prod, colour = variable) +
+  geom_line()
+
+
+  
+```
+
+
