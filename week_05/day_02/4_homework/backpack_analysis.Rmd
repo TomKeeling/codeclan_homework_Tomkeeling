@@ -83,7 +83,7 @@ I'm really not sure, but I will add two trend lines to see.
 backpack_data %>% 
   ggplot() +
   aes(x = body_weight, y = backpack_weight) +
-  geom_point(aes(shape = sex)) +
+  geom_point(aes(shape = sex, col = sex)) +
   geom_smooth(aes(col = sex), method=lm, se=FALSE, size=0.5, linetype = "longdash")
 ```
 We can see that heavier women are marginally more inclined to take heavier bags with them.
