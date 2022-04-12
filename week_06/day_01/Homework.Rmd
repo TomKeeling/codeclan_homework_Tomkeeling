@@ -20,7 +20,11 @@ titanic <- read_csv(here::here("data/titanic.csv"))
 ```
 
 ```{r}
-titanic
+titanic %>% 
+  filter(class == "engineering crew"|
+         class == "victualling crew"|
+         class == "deck crew"|
+         class == "restaurant staff")
 ```
 
 Question
@@ -39,14 +43,14 @@ titanic <- titanic %>%
 
 
 con_pass <- titanic %>% 
-    filter(!is.na(fare)) %>% 
+    filter(fare > 0) %>% 
   summarise(mean(survived))
 
 con_crew <- titanic %>% 
-    filter(is.na(fare)) %>% 
+    filter(fare == 0) %>% 
   summarise(mean(survived))
 ```
-the conditional chance of survival for passengers is 0.3250802, crew members is 0.07692308. so you were more likely to be a surviving crew member than a surviving passenger.
+the conditional chance of survival for passengers is 0.3857475, crew members is 0.2370787	. so you were more likely to be a surviving crew passenger than a surviving passenger.
 
 Question 1.
 If I roll a six-sided dice once, what is the probability of getting a number less than 5?
@@ -109,7 +113,7 @@ rolldie(6) %>%
 1/46656 # = 2.143347e-05
 2.143347e-05/2 # = 1.071673e-05 rounding error? vv below vv
 
-((1/6)^6)/2 # = 1.071674e-05
+((1/6)^6)
 ```
 
 
