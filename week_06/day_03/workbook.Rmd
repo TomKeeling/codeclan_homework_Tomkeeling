@@ -24,7 +24,7 @@ The distribution is heavily right skewed and has a very low standard deviation c
 
 ```{r}
 lot_area_bootstrap <- ames %>% 
-  rep_sample_n(200, replace = TRUE, reps = 5000) %>% 
+  rep_sample_n(2930, replace = TRUE, reps = 5000) %>% 
   summarise(
     mean_lot_area_bootstrap = mean(lot_area)
   )

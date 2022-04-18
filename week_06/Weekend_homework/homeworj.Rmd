@@ -1,0 +1,154 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+data(msleep)
+library(infer)
+```
+
+Question 1.
+Explore the dataset and familiarise yourself with it.
+```{r}
+glimpse(msleep)
+msleep
+```
+Question 2.
+Jabberwockies sleep for around 7 hours a night, on average. Perform an appropriate statistical test to determine whether the mean sleep_total in the sampled population of animal types differs from the typical value for jabberwockies.
+H0 - Jabberwockies have the same mean sleep length as other animals in the set.
+H1 - abberwockies don't have the same mean sleep length as other animals in the set.
+
+```{r}
+observed_statistic <- msleep %>% 
+  summarise(mean_sleep = mean(sleep_total)) %>% 
+  pull(mean_sleep)
+
+
+```
+
+```{r}
+null_distribution <- msleep %>% 
+  specify(response = sleep_total) %>% 
+  hypothesize(null = "point", mu = observed_statistic) %>% 
+  generate(reps = 10000, type = "bootstrap") %>% 
+  calculate(stat = "mean")
+```
+
+```{r}
+get_p_value(null_distribution, obs_stat = 7, direction = "both")
+```
+The probability of our observed statistic occuring within our dataset is 0.9978, meaning that the jabberwocky's total_sleep time isnt unusual, and this gives us evidence to 
+
+```{r}
+null_distribution %>%
+  visualise() +
+  shade_p_value(obs_stat = 7, direction = "both")
+```
+
+The P valiue is 0  - we reject the null hypothesis that the Jabberwockies have the same mean sleep length as other animals in the set.
+
+Question 3.
+Perform an appropriate statistical test to determine whether omnivores sleep for significantly longer than herbivores, on average
+
+
+H0 - omnivores do not sleep for significantly longer than herbivores
+H1 - omnivores do sleep longer than herbivores
+
+```{r}
+null_distribution <- msleep %>% 
+  filter(vore %in% c("herbi","omni")) %>% 
+  specify(sleep_total ~ vore) %>% 
+  hypothesize(null = "independence") %>% 
+  generate(reps = 1000, type = "permute") %>% 
+  calculate(stat = "diff in means", order = c("omni", "herbi")) 
+
+```
+
+
+```{r}
+means <- msleep %>% 
+  group_by(vore) %>% 
+  summarise(mean_sleep = mean(sleep_total))
+
+observed_statistic <- means$mean_sleep[[4]] - means$mean_sleep[[1]]
+  
+```
+omnivores do sleep longer in the observed statistic. is this valid?
+
+```{r}
+null_distribution %>% 
+  get_p_value(obs_stat = observed_statistic, direction = "both")
+```
+P value is 0.602 - this suggests that the result is not statistically significant for the alternative hypothesis, and that the carnivores don't sleep __significantly__ longer than omnivores.
+
+Question 4. Perform an appropriate statistical test to determine whether the proportion of domesticated animal types in the population of animal types is greater than 5%
+. 
+
+```{r}
+counts <-  msleep %>% 
+  mutate(conservation = case_when(
+    conservation == "domesticated" ~ "domesticated",
+    TRUE ~ "undomesticated"
+  )) %>% 
+  count(conservation) 
+
+observed_statistic <- counts$n[[1]]/(counts$n[[2]] + counts$n[[1]])
+  
+
+null_distribution <- msleep %>% 
+  mutate(conservation = case_when(
+    conservation == "domesticated" ~ "domesticated",
+    TRUE ~ "undomesticated"
+  )) %>% 
+  specify(response = conservation, success = "domesticated") %>% 
+  hypothesize(null = "point", p = 0.05) %>% 
+  generate(reps = 10000, type = "draw") %>% 
+  calculate(stat = "prop")
+
+null_distribution %>% 
+  get_p_value(obs_stat = observed_statistic, direction = "both")
+```
+
+p value is 0.015, which means we can reject our null hypothesis that the proportion of domesticated animal types in the population of animal types is not greater than 5%
+
+For the following three business problems write out:
+
+What kind of test you would use
+H0 and Ha in both mathematical notation and in words.
+Also state the method you would use to generate the null distribution (bootstrap, permutation or simulation).
+
+
+Question 1.
+You work for a independent coffee shop. The boss tells you that she thinks that around 40%
+ of people in the town (population 30,000) know of the coffee shop, but you are skeptical of the estimate. You conduct a random survey of 200
+ people in the town, asking if respondents are aware of your coffee shop. You want to use the sample to test the hypothesis that 40%
+ or more of the town’s population have heard of the coffee shop.
+ 
+  H0 - less than 40% of people in town know the coffee shop
+  H1 - 40% or more of people in town know the coffee shop
+  
+  $$H_0 : N_k/\Sigma N < 0.40$$
+    $$H_1 : N_k/\Sigma N \ge 0.40$$
+  To generate the null distribution of this I would use a simulation method.
+  
+  Question 2.
+You work for a website design company and have performed an A/B test on the position of a banner on a website promoting a particular item. 
+
+A/B testing A method comparing two versions of a web page, email, flyer or other marketing device against each other to determine which version performs better. As it is essentially a controlled experiment, the design should try to ensure that the groups experiencing both versions of the marketing device are equivalent and representative of the population.
+
+You selected five days at random last month and then randomly selected 200
+ of each sampled day’s users into group A
+ and another 200
+ of that day’s users into group B
+. Group A
+ continued to be shown the banner at the right hand side of the webpage (its usual position) while group B
+ was shown the banner at the top of the page. You monitored each sampled user’s interactions with the website, in particular the ‘click through rate’ (CTR) on the banner, i.e. what proportion of sampled users clicked on the banner. You want to use the sampled data to test the hypothesis that website users overall are more likely to click on the banner if positioned at the top of the page
+ 
+H0 -  website users overall are not more likely to click on the banner if positioned at the top of the page.
+H0 -  website users overall are more likely to click on the banner if positioned at the top of the page.
+
+I would use bootstrapping for this option.
+  
