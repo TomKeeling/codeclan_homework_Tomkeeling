@@ -132,7 +132,7 @@ You work for a independent coffee shop. The boss tells you that she thinks that 
   
   $$H_0 : N_k/\Sigma N < 0.40$$
     $$H_1 : N_k/\Sigma N \ge 0.40$$
-  To generate the null distribution of this I would use a simulation method.
+  To generate the null distribution of this I would use a DRAW method.
   
   Question 2.
 You work for a website design company and have performed an A/B test on the position of a banner on a website promoting a particular item. 
@@ -151,4 +151,5 @@ H0 -  website users overall are not more likely to click on the banner if positi
 H0 -  website users overall are more likely to click on the banner if positioned at the top of the page.
 
 I would use bootstrapping for this option.
-  
+
+we have evidence to reject a in favour of b.
