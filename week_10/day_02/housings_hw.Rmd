@@ -1,0 +1,142 @@
+---
+title: "Homework - features and elements of multiple regression"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    df_print: paged
+    css: ../../../styles.css
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+knitr::opts_chunk$set(echo = TRUE, fig.align = 'center')
+```
+
+<hr>
+
+# MVP
+
+<br>
+
+1. 
+```{r}
+housing <- read_csv("data/housing_prices.csv")
+
+glimpse(housing)
+summary(housing)
+```
+
+
+
+<br>
+
+2. We expect the `total_rooms` of houses to be strongly correlated with `total_bedrooms`. Use `ggpairs()` to investigate correlations between these two variables.
+
+```{r}
+data(housing)
+ggpairs(data = housing, columns = 4:5)
+```
+
+
+<br> 
+
+3. So, we do find significant correlations. Let's drop `total_bedrooms` from the dataset, and use only `total_rooms` going forward.
+
+```{r}
+housing <- housing %>% select(-total_bedrooms)
+```
+
+
+<br>
+
+4. We are interested in developing a regression model for the `median_house_value` of a house in terms of the possible predictor variables in the dataset. 
+
+
+
+  i. Use `ggpairs()` to investigate correlations between `median_house_value` and the predictors (this may take a while to run, don't worry, make coffee or something).
+  
+  possible predictors -> housing_median_age, total_rooms, population, households, median_income
+  
+```{r}
+housing_matrix <- ggpairs(data = housing, columns = 3:8)
+```
+  
+
+  ii. Perform further `ggplot` visualisations of any significant correlations you find.
+  
+```{r}
+housing %>% 
+  ggplot(aes(x = median_income, y = median_house_value)) +
+  geom_point(size = 1, alpha = 0.1) 
+```
+generally speaking, if a household has a higher income, their house value is much higher.
+
+```{r}
+housing %>% 
+  ggplot(aes(x = total_rooms, y = median_house_value)) +
+  geom_point(size = 0.1)
+```
+  
+```{r}
+housing %>% 
+  ggplot(aes(x = households, y = median_house_value)) +
+  geom_point(size = 0.1)
+```
+households and total rooms both have a strong relationship with eachother so these plots look similar.
+<br>
+
+5. Shortly we may try a regression model to fit the categorical predictor `ocean_proximity`. Investigate the level of `ocean_proximity` predictors. How many dummy variables do you expect to get from it?
+
+```{r}
+housing %>% 
+  count(ocean_proximity)
+```
+
+  there should be 5 levels of predictors.
+<br>
+ 
+6. Start with simple linear regression. Regress `median_house_value` on `median_income` and check the regression diagnostics.
+
+```{r}
+library(ggfortify)
+library(fastDummies)
+
+model <- lm(median_house_value ~ median_income, data = housing) 
+summary(model)
+```
+the regression diagnostics suggest a significant relationship
+
+
+<br> 
+
+7. Add another predictor of your choice. Check your assumptions, diagnostics, and interpret the model.
+
+```{r}
+model2 <- lm(median_house_value ~ median_income:ocean_proximity, data = housing)
+plot(model2)
+summary(model2) 
+
+```
+the model suggests that the relationship between house value and income has the steepest gradient  for islands by far. those near bays and oceans also have a steeper gradient than others, suggesting the ocean is a large factor in house value and income.
+
+# Extension
+    
+<br>
+
+8. Try adding an interaction between `log(medium_income)` and your chosen categorical predictor. Do you think this interaction term is statistically justified?
+```{r}
+model3 <- lm(log(median_house_value) ~ log(median_income):ocean_proximity, data = housing)
+autoplot(model3)
+summary(model3)
+```
+
+
+<br>
+
+9. Find and plot an appropriate visualisation to show the effect of this interaction
+
+
+
