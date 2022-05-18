@@ -187,6 +187,17 @@ library(yardstick)
 
 conf_mat <- titanic_test_pred %>% 
   conf_mat(truth = survived_flag, estimate = pred)
+
+titanic_test_pred %>% 
+  accuracy(truth = survived_flag, estimate = pred)
+
+titanic_test_pred %>% 
+  yardstick::specificity(truth = survived_flag, estimate = pred)
+
+titanic_test_pred %>% 
+  yardstick::sensitivity(truth = survived_flag, estimate = pred)
+
+
 ```
 the confusion matrix shows that the majority of the time the model is correct. it predicted 18 yesses correctly, with only four false positives. 39 true negatives with only 10 false negatives.
 
