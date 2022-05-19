@@ -1,0 +1,85 @@
+---
+title: "Clustering homework"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+* You have been provided some customer data from a shopping centre. Do some exploratory analysis on the data. Comment on findings. 
+```{r}
+library(tidyverse)
+library(cluster)
+library(factoextra)
+library(corrplot)
+library(dendextend)
+library(CodeClanData)
+library(GGally)
+shopping <- read_csv("data/mall_customers.csv") %>% janitor::clean_names()
+```
+```{r}
+shopping %>% 
+  select(is.numeric) %>% 
+  ggpairs()
+```
+```{r}
+shopping %>% 
+  ggplot() + 
+  aes(x = spending_score_1_100, y = annual_income_k, colour = age) + 
+  geom_point()
+```
+
+The findings of these plots suggest that the spending score has a really particular relationship with many of the variables. This will be good for the grouping algorithm i think. Age and annual income also behave in an interesting way.
+
+* We are interested in creating a marketing campaign to target customers based on their spending score and annual income. Perform a k-means clustering to find if there are meaningful clusters in the data to target the customers. 
+
+```{r}
+shopping %>% 
+  ggplot(aes(x = annual_income_k, y = spending_score_1_100)) + 
+  geom_point()
+# looks like there will be.
+```
+
+
+* Perform k-means clustering and chose a value of k.
+
+```{r}
+shopping_k_data <- shopping %>% select(annual_income_k, spending_score_1_100)
+
+fviz_nbclust(shopping_k_data, kmeans, method = "wss", nstart = 25)
+fviz_nbclust(shopping_k_data, kmeans, method = "silhouette", nstart = 25)
+fviz_nbclust(shopping_k_data, kmeans, method = "gap_stat", nstart = 25)
+```
+based on this - especially the sillhoette plot, i would chose a k number of 5.
+
+* Visualise the clustering for your chosen value of k.
+
+```{r}
+shopping_model <- shopping_k_data %>% 
+  kmeans(
+    centers = 5,
+    nstart = 25)
+clustered_shopping <- augment(shopping_model, shopping_k_data) 
+
+clustered_shopping %>% 
+  ggplot() +
+  aes(x = annual_income_k, y = spending_score_1_100, colour = .cluster) +
+  geom_point()
+```
+
+
+* Do you think the clustering seems a good fit for this data?
+
+the clustering seems a great fir for the model in my opinion.
+
+* Comment on the attributes on one or two of the clusters (maybe even give them a label if you like - like in section 4.1 of the 'Segmentation & clustering intro' lesson). 
+
+the clustering essentially moves people into medium spender scores with a medium income, cluster 1, low spending scores with a high income, cluster 2, low income with  low spending score, 3, low income with high score, 4, and high income with high score.
+
+
+
+
+
+
