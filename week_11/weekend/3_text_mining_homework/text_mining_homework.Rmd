@@ -1,0 +1,73 @@
+---
+title: "Text Mining Homework"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    df_print: paged
+    css: ../../../styles.css
+  pdf_document: default
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, eval = FALSE, fig.align = "center", message = FALSE, warning = FALSE)
+```
+
+# MVP
+
+Using the dataset `austen_books()` from the package `janeaustenr`:
+
+```{r}
+library(tidyverse)
+library(tidytext)
+library(ggwordcloud)
+library(text2vec)
+
+ja <- janeaustenr::austen_books()
+```
+
+
+
+1. Find the most common words in both Pride & Prejudice and Sense & Sensibility.
+
+The most common words in both of these books when assessed together is the, to , of, and, and her
+```{r}
+ja %>% 
+  unnest_tokens(word, text) %>% 
+  filter(book %in% c("Pride & Prejudice", "Sense & Sensibility")) %>% 
+  count(word, sort = T)
+
+ja %>% 
+  unnest_tokens(word, text) %>% 
+  filter(book %in% c("Pride & Prejudice", "Sense & Sensibility")) %>% 
+  group_by(book) %>% 
+  count(word, sort = T) 
+  
+```
+
+2. Find the most common words in both Pride & Prejudice and Sense & Sensibility, not including stop words.
+
+```{r}
+pop_words <- ja %>% 
+  unnest_tokens(word, text) %>% 
+  filter(book %in% c("Pride & Prejudice", "Sense & Sensibility")) %>% 
+  group_by(book) %>% 
+  count(word, sort = T) %>% 
+  anti_join(stop_words, by = "word")
+```
+All of the most common words without stop words pretty much are names.. which is quite interesting, but makes sense i guess.
+
+
+3. Find the most common sentiment words in both Pride & Prejudice and Sense & Sensibility.
+
+```{r}
+pop_sentiments <- pop_words %>% 
+  inner_join(get_sentiments("bing"), by = "word") %>% 
+  filter(word != "miss")
+```
+The most popular sentiment words are happy, love, pleasure, affection and happiness.
+
+```
+
